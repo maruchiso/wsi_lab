@@ -14,42 +14,68 @@
 ############## Implementacja ##############
 
 from autograd import grad
-import numpy as np
+import autograd.numpy as np
 from cec2017.functions import f3, f12
 import matplotlib.pyplot as plt
 
-#funkcja kwadratowa
+#quadratic function
 def f(x):
-    return sum(x ** 2)
+    return np.sum(x ** 2)
 
-def solver(f, x0, alfa=1e-3, epsilon=1e-1):
+def solver(f, x0, alfa=1e-1, epsilon=1e-6, iterations=1000):
     gradient = grad(f)
-    x = x0
+    x = np.array(x0)
+    #x = x.flatten()
     f_values = []
-
-    while True:
-
+    iteration = 0
+    for i in range(iterations):
         gradient_value = gradient(x)
         x_new = x - alfa * gradient_value
+        #values for the plot
         f_values.append(f(x_new))
-
-        if np.all(abs(gradient_value)) <= epsilon or np.all(abs(x_new - x)) <= epsilon:
+        
+        #stopping criterion
+        if np.all(np.abs(gradient_value) <= epsilon) and np.all(np.abs(x_new - x) <= epsilon):
             print("Znaleziono!")
             break
-
+        
+        #update x
         x = x_new
-    return x, f_values
+        iteration += 1
+        print(i)
 
-def plot(f_values, alfa):
-    plt.plot(f_values)
-    plt.title(f"Zbieżność dla alfa={alfa}")
-    plt.xlabel("Iteracja")
-    plt.ylabel("Wartość funkcji celu")
+    result = {
+        'x': x,
+        'y': f(x),
+        't': iteration,
+        'f_values': f_values
+    }
+    return result
+
+#plot drawing
+def plot(f, x0, alfa_to_test):
+    for alfa in alfa_to_test:
+        result = solver(f,x0, alfa)
+        plt.plot(result['f_values'], label=f'alfa={alfa}')
+    
+    plt.xlabel('Iteracje')
+    plt.ylabel('Wartość funkcji')
+    plt.title('Zbieżność dla różnych alf')
+    plt.legend(bbox_to_anchor=(1, 0.5))
     plt.grid(True)
     plt.show()
 
-x0 = np.random.uniform(-100.0, 100.0, 10)
-x, f_values = solver(f, x0)
-print(x)
-plot(f_values, 1e-1)
+#Note that each function takes a 2D array and returns a 1D array
+def f3_adapter(x):
+    x_reshaped = np.array(x).reshape(1, -1)
+    result = f3(x_reshaped)
+    return result[0]
 
+
+x0 = np.random.uniform(-100.0, 100.0, 10)
+alfa_to_test = [1e-9, 1e-10, 1e-11]
+x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
+gradient = grad(f3_adapter)
+gradient(x0_cec)
+
+plot(f12, x0_cec, alfa_to_test)
