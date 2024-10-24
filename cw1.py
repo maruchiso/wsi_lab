@@ -22,10 +22,9 @@ import matplotlib.pyplot as plt
 def f(x):
     return np.sum(x ** 2)
 
-def solver(f, x0, alfa=1e-1, epsilon=1e-6, iterations=1000):
+def solver(f, x0, alfa=1e-3, epsilon=1e-6, iterations=3000):
     gradient = grad(f)
-    x = np.array(x0)
-    #x = x.flatten()
+    x = x0
     f_values = []
     iteration = 0
     for i in range(iterations):
@@ -55,12 +54,12 @@ def solver(f, x0, alfa=1e-1, epsilon=1e-6, iterations=1000):
 #plot drawing
 def plot(f, x0, alfa_to_test):
     for alfa in alfa_to_test:
-        result = solver(f,x0, alfa)
+        result = solver(f, x0, alfa)
         plt.plot(result['f_values'], label=f'alfa={alfa}')
     
     plt.xlabel('Iteracje')
     plt.ylabel('Wartość funkcji')
-    plt.title('Zbieżność dla różnych alf')
+    plt.title('Wykresy zbieżności dla różnych parametrów kroków')
     plt.legend(bbox_to_anchor=(1, 0.5))
     plt.grid(True)
     plt.show()
@@ -72,10 +71,13 @@ def f3_adapter(x):
     return result[0]
 
 
-x0 = np.random.uniform(-100.0, 100.0, 10)
-alfa_to_test = [1e-9, 1e-10, 1e-11]
-x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
-gradient = grad(f3_adapter)
-gradient(x0_cec)
 
-plot(f12, x0_cec, alfa_to_test)
+alfa_to_test = [1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1]
+x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
+
+
+#For qudratic function
+plot(f, x0_cec, alfa_to_test)
+
+#For F3 function
+plot(f3_adapter, x0_cec, alfa_to_test)
