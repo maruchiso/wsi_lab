@@ -89,7 +89,7 @@ alfa_to_test = [1e-10, 1e-9, 1e-8] #[1e-3, 1e-2, 1e-1]
 x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
 
 
-#For qudratic function
+#For qudratic function 
 plot(f, x0_cec, alfa_to_test)
 
 #For F3 function
