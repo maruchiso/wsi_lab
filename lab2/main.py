@@ -15,11 +15,10 @@ Rozważ dwie wymiarowości zadania optymalizacji (liczba zmiennych decyzyjnych):
 import numpy as np
 from cec2017.functions import f3, f7
 from typing import Tuple, Callable
-
 from time import time
 import matplotlib.pyplot as plt
 
-def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int = 30000, a: int = 5, sigma: float = 0.2) -> Tuple[float, float]:
+def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int = 3000, a: int = 5, sigma: float = 0.2) -> Tuple[float, float]:
     iteration = 1
     success_counter = 0
     function_value = f(x0)
@@ -67,6 +66,32 @@ def plot(f: Callable[[np.ndarray], float], x0: np.ndarray):
     plt.grid(True)
     plt.show()
 
+def plot_sigmas(f: Callable[[np.ndarray], float], x0: np.ndarray, sigmas: np.ndarray, file_name: str):
+    for sigma in sigmas:
+        _, _, history = solver(f, x0, sigma=sigma)
+        plt.plot(history, label=f'Sigma={sigma}')
+    
+    plt.xlabel("Iteracje")
+    plt.ylabel("Wartość funkcji")
+    plt.title("Zbieżność dla różnych wartości sigmy")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(file_name)
+    plt.show()
+
+def plot_a(f: Callable[[np.ndarray], float], x0: np.ndarray, a_list: np.ndarray = [0.5, 5, 50], file_name: str = ""):
+    for a in a_list:
+        _, _, history = solver(f, x0, a=a)
+        plt.plot(history, label=f'Paramter a={a}')
+    plt.xlabel("Iteracje")
+    plt.ylabel("Wartość funkcji")
+    plt.title("Zbieżność dla różnych wartości parametru a")
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(file_name)
+    plt.show()
+
+
 def f(x):
     return np.sum(x ** 2)
 
@@ -82,9 +107,16 @@ def f7_adapter(x):
 
 
 x0 = np.random.uniform(-100.0, 100.0, size=(1, 10))
-plot(f, x0)
-plot(f3_adapter, x0)
-plot(f7_adapter, x0)
+sigmas = [0.02, 0.2, 2]
+
+
+plot_sigmas(f, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_kwadratowa.png")
+plot_sigmas(f3_adapter, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_f3.png")
+plot_sigmas(f7_adapter, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_f7.png")
+
+plot_a(f, x0, file_name="a_kwadratowa.png")
+plot_a(f3_adapter, x0, file_name="a_f3.png")
+plot_a(f7_adapter, x0, file_name="a_f7.png")
 
     
 
