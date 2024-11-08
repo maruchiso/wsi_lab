@@ -17,13 +17,17 @@ from cec2017.functions import f3, f7
 from typing import Tuple, Callable
 from time import time
 import matplotlib.pyplot as plt
+from scipy.stats import wilcoxon
 
-def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int = 3000, a: int = 5, sigma: float = 0.2) -> Tuple[float, float]:
+
+def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int = 3000, a: int = 5, sigma: float = 0.5, max_no_improve_counter: int = 100) -> Tuple[float, float]:
+    start_time = time()
     iteration = 1
     success_counter = 0
     function_value = f(x0)
     x = x0
     history = [function_value]
+    no_improve_counter = 0
     
 
     while iteration <= max_iteration:
@@ -35,7 +39,13 @@ def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int 
             function_value = new_function_value
             x = mutation
             history.append(new_function_value)
+            no_improve_counter = 0
             
+        else:
+            no_improve_counter += 1
+        
+        if no_improve_counter >= max_no_improve_counter:
+            break
         
         if iteration % a == 0:
             if success_counter / a > 0.2:
@@ -44,31 +54,15 @@ def solver(f: Callable[[np.ndarray], float], x0: np.ndarray, max_iteration: int 
                 sigma *= 0.82
             success_counter = 0
         iteration += 1
+    end_time = ()
+    evaluation_time = end_time - start_time
     
-    return x, function_value, history
+    return x, function_value, history, evaluation_time
 
-
-def plot(f: Callable[[np.ndarray], float], x0: np.ndarray):
-    start_time = time()
-    x_min, min_value, history = solver(f, x0)
-    end_time = time()
-    evaluation_time = round(end_time - start_time, 3)
-    
-    with open('details.txt', 'a') as file:
-        file.write(f"Minimum: {x_min}")
-        file.write(f"Minimum value: {min_value}")
-        file.write(f"Evaluation time: {evaluation_time}")
-        file.write("\n" + "################" + "\n")
-    
-    plt.plot(history)
-    plt.xlabel("Iteracje")
-    plt.ylabel("Wartość funkcji")
-    plt.grid(True)
-    plt.show()
 
 def plot_sigmas(f: Callable[[np.ndarray], float], x0: np.ndarray, sigmas: np.ndarray, file_name: str):
     for sigma in sigmas:
-        _, _, history = solver(f, x0, sigma=sigma)
+        _, _, history, _ = solver(f, x0, sigma=sigma)
         plt.plot(history, label=f'Sigma={sigma}')
     
     plt.xlabel("Iteracje")
@@ -79,9 +73,9 @@ def plot_sigmas(f: Callable[[np.ndarray], float], x0: np.ndarray, sigmas: np.nda
     plt.savefig(file_name)
     plt.show()
 
-def plot_a(f: Callable[[np.ndarray], float], x0: np.ndarray, a_list: np.ndarray = [0.5, 5, 50], file_name: str = ""):
+def plot_a(f: Callable[[np.ndarray], float], x0: np.ndarray, a_list: np.ndarray = [5, 20, 50], file_name: str = ""):
     for a in a_list:
-        _, _, history = solver(f, x0, a=a)
+        _, _, history, _ = solver(f, x0, a=a)
         plt.plot(history, label=f'Paramter a={a}')
     plt.xlabel("Iteracje")
     plt.ylabel("Wartość funkcji")
@@ -91,9 +85,6 @@ def plot_a(f: Callable[[np.ndarray], float], x0: np.ndarray, a_list: np.ndarray 
     plt.savefig(file_name)
     plt.show()
 
-
-def f(x):
-    return np.sum(x ** 2)
 
 def f3_adapter(x):
     x_reshaped = np.array(x).reshape(1, -1)
@@ -106,17 +97,25 @@ def f7_adapter(x):
     return result[0]
 
 
-x0 = np.random.uniform(-100.0, 100.0, size=(1, 10))
-sigmas = [0.02, 0.2, 2]
+def main():
 
+    x0 = np.random.uniform(-100.0, 100.0, size=(1, 10))
+    x0_30 = np.random.uniform(-100.0, 100.0, size=(1, 30))
+    sigmas = [0.1, 2, 5]
 
-plot_sigmas(f, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_kwadratowa.png")
-plot_sigmas(f3_adapter, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_f3.png")
-plot_sigmas(f7_adapter, x0, sigmas = [0.02, 0.2, 2], file_name="sigma_f7.png")
+    
+'''
+    plot_sigmas(f, x0, sigmas=sigmas, file_name="sigma_kwadratowa.png")
+    plot_sigmas(f3_adapter, x0, sigmas=sigmas, file_name="sigma_f3.png")
+    plot_sigmas(f7_adapter, x0, sigmas=sigmas, file_name="sigma_f7.png")
 
-plot_a(f, x0, file_name="a_kwadratowa.png")
-plot_a(f3_adapter, x0, file_name="a_f3.png")
-plot_a(f7_adapter, x0, file_name="a_f7.png")
+    plot_a(f, x0, file_name="a_kwadratowa.png")
+    plot_a(f3_adapter, x0, file_name="a_f3.png")
+    plot_a(f7_adapter, x0, file_name="a_f7.png")
+'''
+
+if __name__=="__main__":
+    main()
 
     
 

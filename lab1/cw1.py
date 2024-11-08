@@ -24,7 +24,7 @@ import json
 def f(x):
     return np.sum(x ** 2)
 
-def solver(f, x0, alfa=1e-3, epsilon=1e-6, iterations=3000):
+def solver(f, x0, alfa=1e-3, epsilon=1e-6, iterations=500):
     gradient = grad(f)
     x = x0
     f_values = []
@@ -63,6 +63,7 @@ def plot(f, x0, alfa_to_test):
         evaluetion_time = end_time - start_time
         evaluation_times[alfa] = round(evaluetion_time, 3)
         plt.plot(result['f_values'], label=f'alfa={alfa}')
+        print(result['x'])
     #log-lin plot
     #plt.yscale('log')
     with open('evaluation_times.json', 'w') as file:
@@ -86,11 +87,11 @@ def f3_adapter(x):
 
 
 alfa_to_test = [1e-10, 1e-9, 1e-8] #[1e-3, 1e-2, 1e-1]
-x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
+x0_cec = np.random.uniform(-1.0, 1.0, size=(1, 10))
 
 
 #For qudratic function
-plot(f, x0_cec, alfa_to_test)
+#plot(f, x0_cec, alfa_to_test)
 
 #For F3 function
 plot(f3_adapter, x0_cec, alfa_to_test)
