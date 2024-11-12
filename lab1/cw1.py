@@ -24,7 +24,7 @@ import json
 def f(x):
     return np.sum(x ** 2)
 
-def solver(f, x0, alfa=1e-3, epsilon=1e-6, iterations=500):
+def solver(f, x0, alfa=1e-3, epsilon=1e-6, iterations=3000):
     gradient = grad(f)
     x = x0
     f_values = []
@@ -75,6 +75,7 @@ def plot(f, x0, alfa_to_test):
     plt.legend(bbox_to_anchor=(1, 0.5))
     plt.grid(True)
     plt.show()
+    print(result['y'])
     
 
 
@@ -87,11 +88,13 @@ def f3_adapter(x):
 
 
 alfa_to_test = [1e-10, 1e-9, 1e-8] #[1e-3, 1e-2, 1e-1]
-x0_cec = np.random.uniform(-1.0, 1.0, size=(1, 10))
+x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
 
 
 #For qudratic function
 #plot(f, x0_cec, alfa_to_test)
 
 #For F3 function
-plot(f3_adapter, x0_cec, alfa_to_test)
+plot(f3_adapter, x0_cec, alfa_to_test=[1e-8])
+
+
