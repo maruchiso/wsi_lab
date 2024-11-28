@@ -1,8 +1,10 @@
-class Player():
-    #choose between X and O
-    def __init__(self, symbol):
-        self.symbol = symbol
+import random
 
+class Player():
+    def __init__(self, symbol, strategy):
+        self.symbol = symbol
+        self.strategy = strategy
+    
 class State():
     def __init__(self):
         self.board = [[" " for i in range(3)] for j in range(3)]
@@ -12,6 +14,7 @@ class State():
         for row in self.board:
             print("|".join(row))
             print(5 * "-")
+        print('\n')
             
     def isWin(self, symbol):
         #collumns check
@@ -41,7 +44,9 @@ class State():
 
     
     def availableMoves(self):
-        return [(row, col) for row in range(3) for col in range(3) if self.board[row][col] == " "]
+        moves = [(row, col) for row in range(3) for col in range(3) if self.board[row][col] == ' ']
+        random.shuffle(moves)
+        return moves
     
     def makeMove(self, row, col, symbol):
         newState = State()
@@ -58,11 +63,16 @@ class State():
 
 class Game():
     def __init__(self):
+        strategy = ''
+        while strategy not in ['minimax', 'random', 'manual']:
+            strategy = input("Write down disiered strategy (minimax, random, manual):\n").strip().lower()
+
         self.state = State()
         self.players = {
-            'X': Player('X'),
-            'O': Player('O')
+            'X': Player('X', strategy='minimax'),
+            'O': Player('O', strategy=strategy)
         }
+
 
     def h(self, state):
         if state.isWin('X'):
@@ -75,14 +85,12 @@ class Game():
 
     def minimax(self, state, depth, isMaxMove):
         if state.isWin('X') or state.isWin('O') or state.isDraw() or depth == 0:
-            self.h(state)
-        
-        if not state.availableMoves():
             return self.h(state)
+        
         #w(u) with the best possible moves
         evaluations = []
-        for row, col in state.availableMoves():
-            nextState = state.makeMove(row, col, 'X' if isMaxMove else 'O')
+        for move in state.availableMoves():
+            nextState = state.makeMove(move[0], move[1], 'X' if isMaxMove else 'O')
             evaluation = self.minimax(nextState, depth - 1, not isMaxMove)
             evaluations.append(evaluation)
 
@@ -92,34 +100,56 @@ class Game():
             return min(evaluations)
         
     def bestMove(self, state, depth):
-        bestValue = -2 if state.currentPlayer == 'X' else 2
-        bestMove = [0, 0]
+        bestValue = -float('inf') if state.currentPlayer == 'X' else float('inf')
+        bestMove = None
 
-        for row, col in state.availableMoves():
-            nextState = state.makeMove(row, col, state.currentPlayer)
-            possibleBestMove = self.minimax(nextState, depth - 1, state.currentPlayer == 'O')
+        for move in state.availableMoves():
+            nextState = state.makeMove(move[0], move[1], state.currentPlayer)
+            minimaxValue = self.minimax(nextState, depth - 1, state.currentPlayer == 'O')
 
-            if state.currentPlayer == 'X' and possibleBestMove > bestValue:
-                return possibleBestMove
-            elif state.currentPlayer == 'O' and possibleBestMove < bestValue:
-                return possibleBestMove
+            if state.currentPlayer == 'X' and minimaxValue > bestValue:
+                bestValue = minimaxValue
+                bestMove = move
+            elif state.currentPlayer == 'O' and minimaxValue < bestValue:
+                bestValue = minimaxValue
+                bestMove = move
+            
+        return bestMove
+    
+    def randomMove(self, state):
+        return random.choice(state.availableMoves())
+    
+    def manualMove(self, state):
+        move = None
+        while True:
+            row = int(input("Write down row number:\n"))
+            col = int(input("Write down collumn number:\n"))
+            move = (row, col)
+            if move in state.availableMoves():
+                return move
 
+    def moveByStrategy(self, player, state, depth=5):
+        if player.strategy == 'minimax':
+            return self.bestMove(state, depth)
+        elif player.strategy == 'random':
+            return self.randomMove(state)
+        elif player.strategy == 'manual':
+            return self.manualMove(state)
+        
     def gameLoop(self):
         while not (self.state.isWin('X') or self.state.isWin('O') or self.state.isDraw()):
             self.state.display()
-            
-            if self.state.currentPlayer == 'X':
-                row, col = self.bestMove(self.state, depth=9)
-            else:
-                row, col = self.bestMove(self.state, depth=9)
+            currentPlayer = self.players[self.state.currentPlayer]
+            move = self.moveByStrategy(currentPlayer, self.state)
+            self.state = self.state.makeMove(move[0], move[1], self.state.currentPlayer)
         
         self.state.display()
         if self.state.isWin('X'):
-            print('X Wygrał')
-        if self.state.isWin('O'):
-            print('O Wygrał')
+            print('X Wins')
+        elif self.state.isWin('O'):
+            print('O Wins')
         else:
-            print('Remis')
+            print('Draw')
 
 
 game = Game()
