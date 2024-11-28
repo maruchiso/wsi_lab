@@ -63,6 +63,7 @@ def plot(f, x0, alfa_to_test):
         evaluetion_time = end_time - start_time
         evaluation_times[alfa] = round(evaluetion_time, 3)
         plt.plot(result['f_values'], label=f'alfa={alfa}')
+        print(result['x'])
     #log-lin plot
     #plt.yscale('log')
     with open('evaluation_times.json', 'w') as file:
@@ -74,6 +75,7 @@ def plot(f, x0, alfa_to_test):
     plt.legend(bbox_to_anchor=(1, 0.5))
     plt.grid(True)
     plt.show()
+    print(result['y'])
     
 
 
@@ -90,7 +92,9 @@ x0_cec = np.random.uniform(-100.0, 100.0, size=(1, 10))
 
 
 #For qudratic function
-plot(f, x0_cec, alfa_to_test)
+#plot(f, x0_cec, alfa_to_test)
 
 #For F3 function
-plot(f3_adapter, x0_cec, alfa_to_test)
+plot(f3_adapter, x0_cec, alfa_to_test=[1e-8])
+
+
